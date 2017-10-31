@@ -7,19 +7,23 @@ clear all; close all;
 % Read in the data here
 x = randi(15,10,3);%training data x values
 y = mod(randi(2,10,1),2);%training data y values
+y(y==0)=-1;
 L = length(y);
-C = 0.5;
-tol = 10e-5;
+%C = 0.5;
+%tol = 10e-5;
 
-% Initialize alpha constrained to the sum of y*alpha = 0
+% Initialize alpha constrained to the sum of y*alpha = 0 & alpha >= 0
 alpha = zeros(L,1);
-for i=1:L
-    num = rand(1)-.5;
+for i=1:L-1
+    num = rand(1);
     alpha(i) = num;
 end
-replacement = find(y,1);
 totalSum = sum(y.*alpha);
-alpha(replacement) = alpha(replacement) + -totalSum;
+if y(L) == 1
+    alpha(L) = -totalSum;
+else
+    alpha(L) = totalSum;
+end
 
 % Initialize b to 0
 b = 0;
@@ -47,3 +51,6 @@ x2 = x(i2,:);
 
 % Calculate k
 k  = dot(x1,x1) + dot(x2,x2) - 2*dot(x1,x2);
+
+% I think everything is correct up to this point...next is update the
+% alphas
