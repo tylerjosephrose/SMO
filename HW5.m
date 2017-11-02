@@ -23,16 +23,18 @@ tol = 10e-5;
 
 % Initialize alpha constrained to the sum of y*alpha = 0 & alpha >= 0
 alpha = zeros(L,1);
-% for i=1:L-1
-%     num = rand(1);
-%     alpha(i) = num;
-% end
-% totalSum = sum(y.*alpha);
-% if y(L) == 1
-%     alpha(L) = -totalSum;
-% else
-%     alpha(L) = totalSum;
-% end
+for i=1:L
+    num = rand(1);
+    alpha(i) = num;
+end
+totalSum = sum(y.*alpha);
+if totalSum > 0
+    place = find(-1)
+    alpha(place) = totalSum + alpha(place);
+elseif totalSum < 0
+    place = find(1)
+    alpha(place) = -totalSum + alpha(place);
+end
 
 % Initialize b to 0
 b = 0;
@@ -76,8 +78,8 @@ k  = dot(x1,x1) + dot(x2,x2) - 2*dot(x1,x2);
 % update alphas
 alpha1_old = alpha(i1);
 alpha2_old = alpha(i2);
-alpha(i2) = alpha2_old + (y(i2)*E(i2))/k
-alpha(i1) = alpha1_old +y(i1)*y(i2)*(alpha2_old - alpha(i2))
+alpha(i2) = alpha2_old + (y(i2)*E(i2))/k;
+alpha(i1) = alpha1_old +y(i1)*y(i2)*(alpha2_old - alpha(i2));
 
 alpha(alpha < L)=L;
 alpha(alpha > H)=H;
