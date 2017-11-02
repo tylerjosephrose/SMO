@@ -5,10 +5,19 @@
 clear all; close all;
 
 % Read in the data here
-x = randi(15,10,3);%training data x values
-y = mod(randi(2,10,1),2);%training data y values
-y(y==0)=-1;
-L = length(y);
+%x = randi(15,10,3);%training data x values
+%y = mod(randi(2,10,1),2);%training data y values
+load fisheriris;
+x = meas;
+L = size(meas,1);
+y = zeros(L,1);
+for i=1:L
+   if strcmp(species(i),'setosa');
+       y(i) = 1;
+   else
+       y(i) = -1;
+   end
+end
 C = 0.5;
 tol = 10e-5;
 
