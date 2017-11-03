@@ -37,7 +37,7 @@ elseif totalSum < 0
 end
 bias = 0;
 count = 0;
-while count < 20
+while count < 100
     L = size(meas,1);
     % Calculate the weight vector
     w = (alpha.*y).'*x;
@@ -45,18 +45,22 @@ while count < 20
     % Calculate KKT Conditions
     KKT = zeros(L,1);
     for i=1:L
-        KKT(i) = alpha(i)*(y(i)*(dot(w,x(i,:) + bias) - 1));
+        KKT(i) = alpha(i)*(y(i)*(dot(w,x(i,:)) + bias) - 1);
     end
     % Pick x1 and x2
-    [~,i1] = max(KKT);
+    [~,i1] = max(abs(KKT));
     x1 = x(i1,:);
     %Ei = sum(alpha.*y.*(dot(x(,
     E = zeros(L,1);
     for i=1:L
         for j=1:L
-            E(i) = E(i) + alpha(j)*y(j)*(dot(x(j),x(1)) - dot(x(j),x(i))) + y(i)- y(1)*dot(x(i),x(j));
+            %E(i) = E(i) + alpha(j)*y(j)*(dot(x(j),x(1)) - dot(x(j),x(i))) + y(i)- y(1)*dot(x(i),x(j));
+            tempE(i,j) = alpha(j)*y(j)*dot(x(i),x(j));
         end
     end
+    h = sum(tempE');
+    E = h-y';
+    
     [~,i2] = max(abs(E));
     x2 = x(i2,:);
 
@@ -70,22 +74,28 @@ while count < 20
 
 
     % Calculate k
-    k  = dot(x1,x1) + dot(x2,x2) - 2*dot(x1,x2);
+    %k  = dot(x1,x1) + dot(x2,x2) - 2*dot(x1,x2);
+    k = dot(x(i1),x(i1)) + dot(x(i2),x(i2)) - 2*dot(x(i1),x(i2));
 %     if k<=0
 %         continue
 %     end
     % update alphas
-    alpha1_old = alpha(i1);
-    alpha2_old = alpha(i2);
-    alpha(i2) = alpha2_old + (y(i2)*E(i2))/k;
-    alpha(alpha < L)=L;
-    alpha(alpha > H)=H;
-    alpha(i1) = alpha1_old +y(i1)*y(i2)*(alpha2_old - alpha(i2));
+    alpha_old = alpha;
+    % not sure which of these to use...one was in class, the other is on HW
+    %alpha(i2) = alpha_old(i2) + (y(i2)*E(i2))/k
+    alpha(i2) = alpha_old(i2) - y(i2)*(E(i1) - E(i2))/k;
+    %alpha(alpha < L)=L;
+    %alpha(alpha > H)=H;
+    if alpha(i2) > L
+        alpha(i2) = L;
+    elseif alpha(i2) > H
+        alpha(i2) = H;
+    end
+    alpha(i1) = alpha_old(i1) +y(i1)*y(i2)*(alpha_old(i2) - alpha(i2));
 
 
-
-    b1 = bias - E(i1) - y(i1)*(alpha(i1)-alpha1_old)*x(i1,:)*x(i1,:)' - y(i2)*(alpha(i2)-alpha2_old)*x(i1,:)*x(i2,:)';
-    b2 = bias - E(i2) - y(i1)*(alpha(i1)-alpha1_old)*x(i1,:)*x(i2,:)' - y(i2)*(alpha(i2)-alpha2_old)*x(i2,:)*x(i2,:)';
+    b1 = bias - E(i1) - y(i1)*(alpha(i1)-alpha_old(i1))*x(i1,:)*x(i1,:)' - y(i2)*(alpha(i2)-alpha_old(i2))*x(i1,:)*x(i2,:)';
+    b2 = bias - E(i2) - y(i1)*(alpha(i1)-alpha_old(i1))*x(i1,:)*x(i2,:)' - y(i2)*(alpha(i2)-alpha_old(i2))*x(i2,:)*x(i2,:)';
 
     if 0<alpha(i1)<C
         bias=b1;
