@@ -113,11 +113,22 @@ while count < 100
     count=count+1;
 end
 
+positives = x(1:50,:);
+negatives = x(51:150,:);
+pos = 0;
+neg = 0;
+for i=1:50
+    pos = pos + sum(positives(i).*w);
+end
+for i = 1:100
+    neg = neg + sum(negatives(i).*w);
+end
+bias = -(pos/50+neg/100)/2;
 
 countDelicious = 0;
 countNasty = 0;
 for k = 1:150
-    result = bias + sum(x(k).*w)
+    result = bias + sum(x(k).*w);
     if(result >0 && y(k) > 0)
         countDelicious = countDelicious + 1;
     elseif(result<0 && y(k) <0)
@@ -130,3 +141,4 @@ end
 
 
 total= sum(y.*alpha)
+fprintf('Accuracy of %0.1i percent\n', (countDelicious/150)*100);
